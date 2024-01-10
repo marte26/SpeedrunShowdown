@@ -1,10 +1,18 @@
-name: maven
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+name: Java CI with Maven
 
 on:
   push:
-    branches: [ master ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ master ]
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -12,29 +20,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Set up JDK 17
-        uses: actions/setup-java@v1
+      - uses: actions/checkout@v3
+      - name: Set up JDK 8
+        uses: actions/setup-java@v3
         with:
-          java-version: 17
-      - name: Compile Minecraft Spigot or Paper (BuildTools)
-        # You may pin to the exact commit or the version.
-        # uses: SpraxDev/Action-SpigotMC@1a29f401c76b9a36671680e789a559368bfda861
-        uses: SpraxDev/Action-SpigotMC@v1
-        with:
-          # Versions to build (sperate multiple with ',')
-          versions: 1.19.2 # optional, default is latest
-          # Should sources be generated?
-          generateSrc: false # optional, default is false
-          # Should the documentation be generated?
-          generateDoc: false # optional, default is false
-          # Should we disable the BuildTools's Java-Version-Check
-          disableJavaCheck: false # optional, default is false
-          # Disables the check for existing files in the local maven repository
-          forceRun: false # optional, default is false
-          # The amount of builds allowed to run at a time, set to '-1' to use system's cpu count
-          threads: -1 # optional, default is -1
-          # Whose BuildTool should be used? (SpraxDev [default], SpigotMC)
-          buildToolProvider: SpigotMC # optional, default is SpraxDev
+          java-version: '8'
+          distribution: 'temurin'
+          cache: maven
       - name: Build with Maven
         run: mvn -B package --file pom.xml
+
+      # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
+      - name: Update dependency graph
+        uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
