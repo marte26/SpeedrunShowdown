@@ -1,7 +1,6 @@
 package com.github.speedrunshowdown.commands;
 
 import com.github.speedrunshowdown.SpeedrunShowdown;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

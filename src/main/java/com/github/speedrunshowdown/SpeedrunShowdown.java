@@ -1,30 +1,15 @@
 package com.github.speedrunshowdown;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import com.github.speedrunshowdown.border.WorldBorderManager;
+import com.github.speedrunshowdown.commands.*;
+import com.github.speedrunshowdown.gui.ScoreboardManager;
+import com.github.speedrunshowdown.listeners.*;
+import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.EnderCrystal;
-import org.bukkit.entity.EnderDragon;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Firework;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
@@ -35,36 +20,11 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Team;
 
-import com.github.speedrunshowdown.border.WorldBorderManager;
-import com.github.speedrunshowdown.commands.ConfigCommand;
-import com.github.speedrunshowdown.commands.GiveArmorCommand;
-import com.github.speedrunshowdown.commands.GiveCompassCommand;
-import com.github.speedrunshowdown.commands.ResumeCommand;
-import com.github.speedrunshowdown.commands.StartCommand;
-import com.github.speedrunshowdown.commands.StopCommand;
-import com.github.speedrunshowdown.commands.SuddenDeathCommand;
-import com.github.speedrunshowdown.commands.WinCommand;
-import com.github.speedrunshowdown.gui.ScoreboardManager;
-import com.github.speedrunshowdown.listeners.AdvancementListener;
-import com.github.speedrunshowdown.listeners.BedUseListener;
-import com.github.speedrunshowdown.listeners.BlockDamageListener;
-import com.github.speedrunshowdown.listeners.BlockDropItemListener;
-import com.github.speedrunshowdown.listeners.CompassUseListener;
-import com.github.speedrunshowdown.listeners.DragonKillListener;
-import com.github.speedrunshowdown.listeners.FoodDropListener;
-import com.github.speedrunshowdown.listeners.GUIClickListener;
-import com.github.speedrunshowdown.listeners.PlayerChangedWorldListener;
-import com.github.speedrunshowdown.listeners.PlayerDeathListener;
-import com.github.speedrunshowdown.listeners.PlayerRespawnListener;
-import com.github.speedrunshowdown.listeners.PortalEnterListener;
-import com.github.speedrunshowdown.listeners.RespawnAnchorUseListener;
-import com.github.speedrunshowdown.listeners.ToolUseListener;
+import java.util.*;
 
 public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     private boolean running = false;
     private boolean suddenDeath = false;
-    private boolean loweredDragonHealthInSuddenDeath = false;
-    private boolean destroyedEndCrystalsInSuddenDeath = false;
     private int taskId;
     private int timer;
 
@@ -73,6 +33,49 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
     private Material[] randomItems = Constants.ITEMS.clone();
 
+    public static Color chatColorToColor(ChatColor chatColor) {
+        switch (chatColor) {
+            case BLACK:
+                return Color.fromRGB(0, 0, 0);
+            case DARK_BLUE:
+                return Color.fromRGB(0, 0, 170);
+            case DARK_GREEN:
+                return Color.fromRGB(0, 170, 0);
+            case DARK_AQUA:
+                return Color.fromRGB(0, 170, 170);
+            case DARK_RED:
+                return Color.fromRGB(170, 0, 0);
+            case DARK_PURPLE:
+                return Color.fromRGB(170, 0, 170);
+            case GOLD:
+                return Color.fromRGB(255, 170, 0);
+            case GRAY:
+                return Color.fromRGB(170, 170, 170);
+            case DARK_GRAY:
+                return Color.fromRGB(85, 85, 85);
+            case BLUE:
+                return Color.fromRGB(85, 85, 255);
+            case GREEN:
+                return Color.fromRGB(85, 255, 85);
+            case AQUA:
+                return Color.fromRGB(85, 255, 255);
+            case RED:
+                return Color.fromRGB(255, 85, 85);
+            case LIGHT_PURPLE:
+                return Color.fromRGB(255, 85, 255);
+            case YELLOW:
+                return Color.fromRGB(255, 255, 85);
+            case WHITE:
+                return Color.fromRGB(255, 255, 255);
+            default:
+                return null;
+        }
+    }
+
+    public static SpeedrunShowdown getInstance() {
+        return (SpeedrunShowdown) Bukkit.getPluginManager().getPlugin("SpeedrunShowdown");
+    }
+
     @Override
     public void onEnable() {
         // Save default config, fails silently if config already exists
@@ -80,7 +83,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
         // Create commands
         getCommand("start").setExecutor(new StartCommand());
-        getCommand("stop").setExecutor(new StopCommand());
+        getCommand("stoprun").setExecutor(new StopCommand());
         getCommand("config").setExecutor(new ConfigCommand());
         getCommand("resume").setExecutor(new ResumeCommand());
         getCommand("suddendeath").setExecutor(new SuddenDeathCommand());
@@ -97,7 +100,6 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         getServer().getPluginManager().registerEvents(new DragonKillListener(), this);
         getServer().getPluginManager().registerEvents(new FoodDropListener(), this);
         getServer().getPluginManager().registerEvents(new GUIClickListener(), this);
-        getServer().getPluginManager().registerEvents(new PlayerChangedWorldListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerDeathListener(), this);
         getServer().getPluginManager().registerEvents(new PlayerRespawnListener(), this);
         getServer().getPluginManager().registerEvents(new PortalEnterListener(), this);
@@ -117,8 +119,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         boolean playerInEnd = false;
         for (Player player : getServer().getOnlinePlayers()) {
             if (
-                player.getGameMode() == GameMode.SURVIVAL &&
-                player.getLocation().getWorld().getEnvironment() == Environment.THE_END
+                    player.getGameMode() == GameMode.SURVIVAL &&
+                            player.getLocation().getWorld().getEnvironment() == Environment.THE_END
             ) {
                 playerInEnd = true;
             }
@@ -137,8 +139,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                 for (int warningTime : getConfig().getIntegerList("warning-times")) {
                     if (timer == warningTime) {
                         getServer().broadcastMessage(
-                            (timer <= 10 ? ChatColor.RED : ChatColor.YELLOW) + "" +
-                            timer + " seconds before sudden death!"
+                                (timer <= 10 ? ChatColor.RED : ChatColor.YELLOW) + "" +
+                                        timer + " seconds before sudden death!"
                         );
 
                         // Play sound to all players
@@ -158,6 +160,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             World end = getServer().getWorld("world_the_end");
 
             // If plugin should lower dragon health and has not already lowered dragon health, lower dragon health
+            boolean loweredDragonHealthInSuddenDeath = false;
             if (getConfig().getBoolean("lower-dragon-health-in-sudden-death") && !loweredDragonHealthInSuddenDeath) {
                 EnderDragon dragon = end.getEnderDragonBattle().getEnderDragon();
 
@@ -165,15 +168,16 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                 // or current health, whichever is lower
                 if (dragon != null) {
                     dragon.setHealth(
-                        Math.min(
-                            Constants.ENDER_DRAGON_SUDDEN_DEATH_HEALTH,
-                            dragon.getHealth()
-                        )
+                            Math.min(
+                                    Constants.ENDER_DRAGON_SUDDEN_DEATH_HEALTH,
+                                    dragon.getHealth()
+                            )
                     );
                 }
             }
 
             // If plugin should destroy end crystals and has not already destroyed end crystals, destroy end crystals
+            boolean destroyedEndCrystalsInSuddenDeath = false;
             if (getConfig().getBoolean("destroy-end-crystals-in-sudden-death") && !destroyedEndCrystalsInSuddenDeath) {
                 for (EnderCrystal crystal : end.getEntitiesByClass(EnderCrystal.class)) {
                     crystal.remove();
@@ -240,7 +244,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             Iterator<Advancement> advancements = getServer().advancementIterator();
             while (advancements.hasNext()) {
                 AdvancementProgress advancementProgress = player.getAdvancementProgress(advancements.next());
-                for (String criteria : advancementProgress.getAwardedCriteria()){
+                for (String criteria : advancementProgress.getAwardedCriteria()) {
                     advancementProgress.revokeCriteria(criteria);
                 }
             }
@@ -256,9 +260,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
             // Give resistance
             player.addPotionEffect(new PotionEffect(
-                PotionEffectType.DAMAGE_RESISTANCE,
-                getConfig().getInt("grace-period") * 20,
-                255
+                    PotionEffectType.DAMAGE_RESISTANCE,
+                    getConfig().getInt("grace-period") * 20,
+                    255
             ));
         }
     }
@@ -325,8 +329,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         // Broadcast sudden death
         getServer().broadcastMessage("");
         getServer().broadcastMessage(
-            "" + ChatColor.WHITE + ChatColor.BOLD + "SUDDEN DEATH > " +
-            ChatColor.RED + "Players can no longer respawn"
+                "" + ChatColor.WHITE + ChatColor.BOLD + "SUDDEN DEATH > " +
+                        ChatColor.RED + "Players can no longer respawn"
         );
         getServer().broadcastMessage("");
 
@@ -341,9 +345,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
             // Give resistance
             player.addPotionEffect(new PotionEffect(
-                PotionEffectType.DAMAGE_RESISTANCE,
-                getConfig().getInt("portal-invincibility") * 20,
-                255
+                    PotionEffectType.DAMAGE_RESISTANCE,
+                    getConfig().getInt("portal-invincibility") * 20,
+                    255
             ));
 
             // Play sound
@@ -351,11 +355,11 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
             // Send title
             player.sendTitle(
-                "" + ChatColor.RED + ChatColor.BOLD + "SUDDEN DEATH",
-                "Players can no longer respawn",
-                10,
-                70,
-                20
+                    "" + ChatColor.RED + ChatColor.BOLD + "SUDDEN DEATH",
+                    "Players can no longer respawn",
+                    10,
+                    70,
+                    20
             );
         }
     }
@@ -401,8 +405,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         // Add compass info
         compassMeta.setDisplayName(ChatColor.WHITE + "Tracking Compass");
         compassMeta.setLore(Arrays.asList(
-            ChatColor.GRAY + "Right click to point to nearest enemy",
-            ChatColor.GRAY + "Left click to point to nearest teammate"
+                ChatColor.GRAY + "Right click to point to nearest enemy",
+                ChatColor.GRAY + "Left click to point to nearest teammate"
         ));
 
         compassMeta.addEnchant(Enchantment.VANISHING_CURSE, 1, false);
@@ -477,11 +481,11 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             // If team is not null, send title of winning team
             if (team != null) {
                 player.sendTitle(
-                    team.getColor() + team.getName().toUpperCase() + " WINS!",
-                    subtitle,
-                    20,
-                    140,
-                    40
+                        team.getColor() + team.getName().toUpperCase() + " WINS!",
+                        subtitle,
+                        20,
+                        140,
+                        40
                 );
             }
         }
@@ -493,22 +497,22 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
         for (int i = 0; i < 50; i++) {
             Location location = new Location(
-                world,
-                (Math.random() - 0.5) * spawnRange,
-                70,
-                (Math.random() - 0.5) * spawnRange
+                    world,
+                    (Math.random() - 0.5) * spawnRange,
+                    70,
+                    (Math.random() - 0.5) * spawnRange
             );
             Firework firework = (Firework) world.spawnEntity(location, EntityType.FIREWORK);
             FireworkMeta fireworkMeta = firework.getFireworkMeta();
             fireworkMeta.setPower(((int) (Math.random() * 3)) + 1); // 1, 2, or 3
             fireworkMeta.addEffect(
-                FireworkEffect.builder().with(
-                    FireworkEffect.Type.BALL_LARGE
-                ).withColor(
-                    color
-                ).flicker(
-                    true
-                ).build()
+                    FireworkEffect.builder().with(
+                            FireworkEffect.Type.BALL_LARGE
+                    ).withColor(
+                            color
+                    ).flicker(
+                            true
+                    ).build()
             );
             firework.setFireworkMeta(fireworkMeta);
         }
@@ -538,9 +542,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                 // If potion effect is not 255 (given by plugin), make permanent
                 if (potionEffect.getAmplifier() != 255) {
                     player.addPotionEffect(new PotionEffect(
-                        potionEffect.getType(),
-                        999999,
-                        potionEffect.getAmplifier()
+                            potionEffect.getType(),
+                            999999,
+                            potionEffect.getAmplifier()
                     ));
                 }
             }
@@ -565,52 +569,5 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
     public ScoreboardManager getScoreboardManager() {
         return scoreboardManager;
-    }
-
-    public WorldBorderManager getWorldBorderManager() {
-        return worldBorderManager;
-    }
-
-    public static Color chatColorToColor(ChatColor chatColor) {
-        switch (chatColor) {
-            case BLACK:
-                return Color.fromRGB(0, 0, 0);
-            case DARK_BLUE:
-                return Color.fromRGB(0, 0, 170);
-            case DARK_GREEN:
-                return Color.fromRGB(0, 170, 0);
-            case DARK_AQUA:
-                return Color.fromRGB(0, 170, 170);
-            case DARK_RED:
-                return Color.fromRGB(170, 0, 0);
-            case DARK_PURPLE:
-                return Color.fromRGB(170, 0, 170);
-            case GOLD:
-                return Color.fromRGB(255, 170, 0);
-            case GRAY:
-                return Color.fromRGB(170, 170, 170);
-            case DARK_GRAY:
-                return Color.fromRGB(85, 85, 85);
-            case BLUE:
-                return Color.fromRGB(85, 85, 255);
-            case GREEN:
-                return Color.fromRGB(85, 255, 85);
-            case AQUA:
-                return Color.fromRGB(85, 255, 255);
-            case RED:
-                return Color.fromRGB(255, 85, 85);
-            case LIGHT_PURPLE:
-                return Color.fromRGB(255, 85, 255);
-            case YELLOW:
-                return Color.fromRGB(255, 255, 85);
-            case WHITE:
-                return Color.fromRGB(255, 255, 255);
-            default:
-                return null;
-        }
-    }
-
-    public static SpeedrunShowdown getInstance() {
-        return (SpeedrunShowdown) Bukkit.getPluginManager().getPlugin("SpeedrunShowdown");
     }
 }

@@ -1,5 +1,7 @@
 package com.github.speedrunshowdown.listeners;
 
+import com.github.speedrunshowdown.Constants;
+import com.github.speedrunshowdown.SpeedrunShowdown;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -8,18 +10,24 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
-import com.github.speedrunshowdown.Constants;
-import com.github.speedrunshowdown.SpeedrunShowdown;
-
 public class ToolUseListener implements Listener {
+    public static boolean isEfficientTool(Material material) {
+        for (Material tool : Constants.EFFICIENT_TOOLS) {
+            if (material == tool) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @EventHandler
     public void onToolUse(PlayerInteractEvent event) {
         SpeedrunShowdown plugin = SpeedrunShowdown.getInstance();
 
         // If plugin is running and should make tools efficient, make tools efficient
         if (
-            plugin.isRunning() &&
-            plugin.getConfig().getBoolean("efficient-tools")
+                plugin.isRunning() &&
+                        plugin.getConfig().getBoolean("efficient-tools")
         ) {
             Player player = event.getPlayer();
             ItemStack item = player.getInventory().getItemInMainHand();
@@ -30,14 +38,5 @@ public class ToolUseListener implements Listener {
                 item.addEnchantment(Enchantment.DURABILITY, 1);
             }
         }
-    }
-
-    public static boolean isEfficientTool(Material material) {
-        for (Material tool : Constants.EFFICIENT_TOOLS) {
-            if (material == tool) {
-                return true;
-            }
-        }
-        return false;
     }
 }

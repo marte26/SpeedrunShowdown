@@ -1,10 +1,7 @@
 package com.github.speedrunshowdown.listeners;
 
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import com.github.speedrunshowdown.SpeedrunShowdown;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,42 +10,7 @@ import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Team;
 
-import com.github.speedrunshowdown.SpeedrunShowdown;
-
 public class PortalEnterListener implements Listener {
-    @EventHandler
-    public void onPortalEnter(PlayerPortalEvent event) {
-        SpeedrunShowdown plugin = SpeedrunShowdown.getInstance();
-        Player player = event.getPlayer();
-
-        // If plugin is running and player is not a spectator
-        if (plugin.isRunning() && player.getGameMode() != GameMode.SPECTATOR) {
-            // Give player portal invincibility
-            event.getPlayer().addPotionEffect(new PotionEffect(
-                PotionEffectType.DAMAGE_RESISTANCE,
-                plugin.getConfig().getInt("portal-invincibility") * 20,
-                255
-            ));
-
-            // If plugin should give portal alerts, give portal alerts
-            if (plugin.getConfig().getBoolean("portal-alerts")) {
-                Location from = event.getFrom();
-                Location to = event.getTo();
-                plugin.getServer().broadcastMessage(
-                    "" + getPlayerColor(player) + ChatColor.BOLD + player.getName() +
-                    ChatColor.WHITE + ChatColor.BOLD + " portaled " +
-                    getLocationString(from) + ChatColor.WHITE + ChatColor.BOLD + " > " +
-                    getLocationString(to)
-                );
-
-                // Play sound to all players
-                for (Player p : plugin.getServer().getOnlinePlayers()) {
-                    p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
-                }
-            }
-        }
-    }
-
     private static ChatColor getPlayerColor(Player player) {
         Team team = SpeedrunShowdown.getInstance().getScoreboardManager().getTeam(player);
         if (team == null) {
@@ -60,10 +22,10 @@ public class PortalEnterListener implements Listener {
 
     private static String getLocationString(Location location) {
         return (
-            getWorldColor(location.getWorld()) + "(" +
-            (int) location.getX() + ", " +
-            (int) location.getZ() + ") " +
-            getWorldName(location.getWorld())
+                getWorldColor(location.getWorld()) + "(" +
+                        (int) location.getX() + ", " +
+                        (int) location.getZ() + ") " +
+                        getWorldName(location.getWorld())
         );
     }
 
@@ -90,6 +52,39 @@ public class PortalEnterListener implements Listener {
                 return ChatColor.DARK_PURPLE;
             default:
                 return ChatColor.WHITE;
+        }
+    }
+
+    @EventHandler
+    public void onPortalEnter(PlayerPortalEvent event) {
+        SpeedrunShowdown plugin = SpeedrunShowdown.getInstance();
+        Player player = event.getPlayer();
+
+        // If plugin is running and player is not a spectator
+        if (plugin.isRunning() && player.getGameMode() != GameMode.SPECTATOR) {
+            // Give player portal invincibility
+            event.getPlayer().addPotionEffect(new PotionEffect(
+                    PotionEffectType.DAMAGE_RESISTANCE,
+                    plugin.getConfig().getInt("portal-invincibility") * 20,
+                    255
+            ));
+
+            // If plugin should give portal alerts, give portal alerts
+            if (plugin.getConfig().getBoolean("portal-alerts")) {
+                Location from = event.getFrom();
+                Location to = event.getTo();
+                plugin.getServer().broadcastMessage(
+                        "" + getPlayerColor(player) + ChatColor.BOLD + player.getName() +
+                                ChatColor.WHITE + ChatColor.BOLD + " portaled " +
+                                getLocationString(from) + ChatColor.WHITE + ChatColor.BOLD + " > " +
+                                getLocationString(to)
+                );
+
+                // Play sound to all players
+                for (Player p : plugin.getServer().getOnlinePlayers()) {
+                    p.playSound(p.getLocation(), Sound.BLOCK_NOTE_BLOCK_PLING, 1, 1);
+                }
+            }
         }
     }
 }

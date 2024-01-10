@@ -2,7 +2,6 @@ package com.github.speedrunshowdown.listeners;
 
 import com.github.speedrunshowdown.gui.GUI;
 import com.github.speedrunshowdown.gui.GUIItem;
-
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -22,8 +21,8 @@ public class GUIClickListener implements Listener {
 
             // If item found not in player's inventory, run on click
             if (
-                item != null &&
-                event.getClickedInventory().getType() != InventoryType.PLAYER
+                    item != null &&
+                            event.getClickedInventory().getType() != InventoryType.PLAYER
             ) {
                 item.onClick(event);
             }

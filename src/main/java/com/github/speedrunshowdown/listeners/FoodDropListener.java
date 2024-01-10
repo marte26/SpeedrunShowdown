@@ -2,7 +2,6 @@ package com.github.speedrunshowdown.listeners;
 
 import com.github.speedrunshowdown.Constants;
 import com.github.speedrunshowdown.SpeedrunShowdown;
-
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,10 +13,10 @@ public class FoodDropListener implements Listener {
     public void onAnimalDeath(EntityDeathEvent event) {
         SpeedrunShowdown plugin = SpeedrunShowdown.getInstance();
 
-		// If plugin is running and should cook food, cook food
+        // If plugin is running and should cook food, cook food
         if (
-            plugin.isRunning() &&
-            plugin.getConfig().getBoolean("cook-food")
+                plugin.isRunning() &&
+                        plugin.getConfig().getBoolean("cook-food")
         ) {
             // For all drops
             for (ItemStack drop : event.getDrops()) {

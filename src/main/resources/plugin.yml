@@ -2,17 +2,17 @@ name: SpeedrunShowdown
 version: 2.0.1
 author: KaiNakamura
 main: com.github.speedrunshowdown.SpeedrunShowdown
-api-version: 1.19
+api-version: 1.16
 load: STARTUP
 commands:
   start:
     description: Start the game
     permission: speedrunshowdown
     usage: /start
-  stop:
+  stoprun:
     description: Stop the game
     permission: speedrunshowdown
-    usage: /stop
+    usage: /stoprun
   config:
     description: Open config gui
     permission: speedrunshowdown

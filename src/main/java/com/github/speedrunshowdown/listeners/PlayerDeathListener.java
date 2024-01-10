@@ -1,16 +1,9 @@
 package com.github.speedrunshowdown.listeners;
 
-import java.util.ArrayList;
-
 import com.github.speedrunshowdown.Constants;
 import com.github.speedrunshowdown.SpeedrunShowdown;
-
 import org.apache.commons.lang.WordUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -18,7 +11,18 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.Team;
 
+import java.util.ArrayList;
+
 public class PlayerDeathListener implements Listener {
+    public static boolean isPersistentTool(Material material) {
+        for (Material tool : Constants.PERSISTENT_TOOLS) {
+            if (material == tool) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
         SpeedrunShowdown plugin = SpeedrunShowdown.getInstance();
@@ -45,7 +49,7 @@ public class PlayerDeathListener implements Listener {
                         }
                     }
 
-                    stringBuilder.append(word + " ");
+                    stringBuilder.append(word).append(" ");
                 }
 
                 deathMessage = stringBuilder.toString();
@@ -71,20 +75,20 @@ public class PlayerDeathListener implements Listener {
                                 teamAlive = true;
                             }
                         }
-                        
+
                         // If team not alive and contains dying player, announce team elimination
                         if (
-                            !teamAlive &&
-                            team.getName().equals(
-                                plugin.getScoreboardManager().getTeam(event.getEntity()).getName()
-                            )
+                                !teamAlive &&
+                                        team.getName().equals(
+                                                plugin.getScoreboardManager().getTeam(event.getEntity()).getName()
+                                        )
                         ) {
                             // Broadcast team elimination
                             plugin.getServer().broadcastMessage("");
                             plugin.getServer().broadcastMessage(
-                                "" + ChatColor.WHITE + ChatColor.BOLD + "TEAM ELIMINATED > " +
-                                team.getColor() + " Team " + WordUtils.capitalize(team.getName()) +
-                                ChatColor.RED + " has been eliminated!"
+                                    "" + ChatColor.WHITE + ChatColor.BOLD + "TEAM ELIMINATED > " +
+                                            team.getColor() + " Team " + WordUtils.capitalize(team.getName()) +
+                                            ChatColor.RED + " has been eliminated!"
                             );
                             plugin.getServer().broadcastMessage("");
                         }
@@ -97,19 +101,19 @@ public class PlayerDeathListener implements Listener {
 
                 // If players need to kill the dragon to win and there's no teams left, respawn players
                 if (
-                    plugin.getConfig().getBoolean("must-kill-dragon-to-win") &&
-                    livingTeams.size() == 0
-                ){
+                        plugin.getConfig().getBoolean("must-kill-dragon-to-win") &&
+                                livingTeams.isEmpty()
+                ) {
                     plugin.suddenDeath();
                 }
                 // Else if players don't need to kill the dragon and there's one team left, make team win
                 else if (
-                    !plugin.getConfig().getBoolean("must-kill-dragon-to-win") &&
-                    livingTeams.size() == 1
+                        !plugin.getConfig().getBoolean("must-kill-dragon-to-win") &&
+                                livingTeams.size() == 1
                 ) {
                     plugin.win(
-                        livingTeams.get(0),
-                        deathMessage
+                            livingTeams.get(0),
+                            deathMessage
                     );
                 }
             }
@@ -122,10 +126,8 @@ public class PlayerDeathListener implements Listener {
                     final ItemStack[] armor = player.getInventory().getArmorContents();
 
                     // Schedule task to give armor back on respawn
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-                        player.getInventory().setArmorContents(armor);
-                    });
-                    
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> player.getInventory().setArmorContents(armor));
+
                     // Remove armor so items don't drop
                     for (ItemStack item : armor) {
                         event.getDrops().remove(item);
@@ -156,14 +158,5 @@ public class PlayerDeathListener implements Listener {
                 }
             }
         }
-    }
-
-    public static boolean isPersistentTool(Material material) {
-        for (Material tool : Constants.PERSISTENT_TOOLS) {
-            if (material == tool) {
-                return true;
-            }
-        }
-        return false;
     }
 }

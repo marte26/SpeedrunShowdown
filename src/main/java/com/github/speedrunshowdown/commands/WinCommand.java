@@ -1,7 +1,6 @@
 package com.github.speedrunshowdown.commands;
 
 import com.github.speedrunshowdown.SpeedrunShowdown;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -29,8 +28,7 @@ public class WinCommand implements CommandExecutor {
 
             if (team != null) {
                 plugin.win(team, "");
-            }
-            else if (player != null) {
+            } else if (player != null) {
                 // Look for team
                 team = plugin.getScoreboardManager().getTeam(player);
 
@@ -42,8 +40,7 @@ public class WinCommand implements CommandExecutor {
                 else {
                     plugin.win(team, "");
                 }
-            }
-            else {
+            } else {
                 sender.sendMessage(plugin.getCommand("win").getUsage());
             }
         }

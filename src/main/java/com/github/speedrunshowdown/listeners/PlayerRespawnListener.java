@@ -1,7 +1,6 @@
 package com.github.speedrunshowdown.listeners;
 
 import com.github.speedrunshowdown.SpeedrunShowdown;
-
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -35,19 +34,17 @@ public class PlayerRespawnListener implements Listener {
             }
 
             // Give resistance
-            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-                player.getPlayer().addPotionEffect(new PotionEffect(
+            plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> player.getPlayer().addPotionEffect(new PotionEffect(
                     PotionEffectType.DAMAGE_RESISTANCE,
                     plugin.getConfig().getInt("respawn-invincibility") * 20,
                     255
-                ));
-            }, 20);
+            )), 20);
 
             // If is sudden death, change respawn location to end
             if (plugin.isSuddenDeath()) {
                 World end = plugin.getServer().getWorld("world_the_end");
                 event.setRespawnLocation(
-                    new Location(end, 0.5, end.getHighestBlockYAt(0, 0) + 1, 0.5, 0, 90)
+                        new Location(end, 0.5, end.getHighestBlockYAt(0, 0) + 1, 0.5, 0, 90)
                 );
             }
         }

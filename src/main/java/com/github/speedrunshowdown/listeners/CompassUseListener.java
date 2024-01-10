@@ -1,14 +1,7 @@
 package com.github.speedrunshowdown.listeners;
 
-import java.util.ArrayList;
-
 import com.github.speedrunshowdown.SpeedrunShowdown;
-
-import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,6 +12,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.CompassMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scoreboard.Team;
+
+import java.util.ArrayList;
 
 public class CompassUseListener implements Listener {
     @EventHandler
@@ -41,17 +36,17 @@ public class CompassUseListener implements Listener {
                 for (Team team : plugin.getScoreboardManager().getScoreboard().getTeams()) {
                     // If compass right clicked and team does not contain the current player
                     if (
-                        (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) &&
-                        !team.hasEntry(player.getName())
+                            (action == Action.RIGHT_CLICK_AIR || action == Action.RIGHT_CLICK_BLOCK) &&
+                                    !team.hasEntry(player.getName())
                     ) {
                         // Loop over all entries on team
                         for (String entry : team.getEntries()) {
                             Player otherPlayer = plugin.getServer().getPlayer(entry);
                             // If other player exists, is alive, and is in the same world, add to list
                             if (
-                                otherPlayer != null &&
-                                otherPlayer.getGameMode() != GameMode.SPECTATOR && 
-                                otherPlayer.getWorld().getEnvironment() == player.getWorld().getEnvironment()
+                                    otherPlayer != null &&
+                                            otherPlayer.getGameMode() != GameMode.SPECTATOR &&
+                                            otherPlayer.getWorld().getEnvironment() == player.getWorld().getEnvironment()
                             ) {
                                 otherPlayers.add(otherPlayer);
                             }
@@ -59,18 +54,18 @@ public class CompassUseListener implements Listener {
                     }
                     // Else if left clicked and team does contain the current player
                     else if (
-                        (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) &&
-                        team.hasEntry(player.getName())
+                            (action == Action.LEFT_CLICK_AIR || action == Action.LEFT_CLICK_BLOCK) &&
+                                    team.hasEntry(player.getName())
                     ) {
                         // Loop over all entries on team
                         for (String entry : team.getEntries()) {
                             Player otherPlayer = plugin.getServer().getPlayer(entry);
                             // If other player exists, is alive, and is in the same world, add to list
                             if (
-                                otherPlayer != null &&
-                                otherPlayer.getGameMode() != GameMode.SPECTATOR && 
-                                otherPlayer.getWorld().getEnvironment() == player.getWorld().getEnvironment() &&
-                                otherPlayer.getUniqueId() != player.getUniqueId()
+                                    otherPlayer != null &&
+                                            otherPlayer.getGameMode() != GameMode.SPECTATOR &&
+                                            otherPlayer.getWorld().getEnvironment() == player.getWorld().getEnvironment() &&
+                                            otherPlayer.getUniqueId() != player.getUniqueId()
                             ) {
                                 otherPlayers.add(otherPlayer);
                             }
@@ -79,7 +74,7 @@ public class CompassUseListener implements Listener {
                 }
 
                 // If no players found, give warning
-                if (otherPlayers.size() == 0) {
+                if (otherPlayers.isEmpty()) {
                     rename(item, ChatColor.WHITE + "No players found to track");
                     player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
                 }
@@ -102,10 +97,10 @@ public class CompassUseListener implements Listener {
                     compassMeta.setLodestone(closestPlayer.getLocation());
                     item.setItemMeta(compassMeta);
                     rename(
-                        item,
-                        ChatColor.WHITE + "Now pointing to " +
-                        plugin.getScoreboardManager().getTeam(closestPlayer).getColor() +
-                        closestPlayer.getName() + ChatColor.WHITE + "'s last location"
+                            item,
+                            ChatColor.WHITE + "Now pointing to " +
+                                    plugin.getScoreboardManager().getTeam(closestPlayer).getColor() +
+                                    closestPlayer.getName() + ChatColor.WHITE + "'s last location"
                     );
                     player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
                 }

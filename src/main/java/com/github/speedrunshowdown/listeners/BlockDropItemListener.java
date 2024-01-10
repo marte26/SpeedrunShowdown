@@ -1,7 +1,6 @@
 package com.github.speedrunshowdown.listeners;
 
 import com.github.speedrunshowdown.SpeedrunShowdown;
-
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Item;
@@ -15,15 +14,13 @@ public class BlockDropItemListener implements Listener {
     public void onBlockDropItem(BlockDropItemEvent event) {
         SpeedrunShowdown plugin = SpeedrunShowdown.getInstance();
 
-		// If plugin is running
+        // If plugin is running
         if (plugin.isRunning()) {
             // Get held item
             ItemStack heldItem = event.getPlayer().getInventory().getItemInMainHand();
             // If player does not have silk touch, change drops
             if (
-                heldItem == null ||
-                heldItem.getItemMeta() == null ||
-                !heldItem.getItemMeta().hasEnchant(Enchantment.SILK_TOUCH)
+                    heldItem.getItemMeta() == null || !heldItem.getItemMeta().hasEnchant(Enchantment.SILK_TOUCH)
             ) {
                 // For all dropped items
                 for (Item droppedItem : event.getItems()) {
@@ -52,8 +49,8 @@ public class BlockDropItemListener implements Listener {
                         // If ingot does exist, change dropped item to ingot
                         if (ingot != null) {
                             droppedItem.getWorld().dropItem(
-                                droppedItem.getLocation(),
-                                new ItemStack(ingot, itemStack.getAmount())
+                                    droppedItem.getLocation(),
+                                    new ItemStack(ingot, itemStack.getAmount())
                             );
                             droppedItem.remove();
                         }

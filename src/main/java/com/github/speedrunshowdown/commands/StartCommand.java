@@ -1,7 +1,6 @@
 package com.github.speedrunshowdown.commands;
 
 import com.github.speedrunshowdown.SpeedrunShowdown;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
